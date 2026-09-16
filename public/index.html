@@ -1,0 +1,79 @@
+<!doctype html>
+<html lang="vi">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>JobPilot - ứng tuyển có bằng chứng</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com">
+  <link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+  <link href="https://fonts.googleapis.com/css2?family=DM+Sans:wght@400;500;600;700&family=Space+Grotesk:wght@500;600;700&display=swap" rel="stylesheet">
+  <link rel="stylesheet" href="/style.css">
+</head>
+<body>
+  <div id="consent" class="modal-backdrop">
+    <section class="consent-card" role="dialog" aria-labelledby="consent-title">
+      <div class="brand-mark">JP</div>
+      <p class="eyebrow">TRƯỚC KHI BẮT ĐẦU</p>
+      <h1 id="consent-title">CV của bạn là dữ liệu cá nhân.</h1>
+      <p>JobPilot chỉ xử lý CV trong phiên này để tìm bằng chứng cho tin tuyển dụng. Nội dung CV và tin bạn gửi sẽ rời máy khi gọi mô hình AI; chúng tôi không lưu vào cơ sở dữ liệu.</p>
+      <ul class="consent-list">
+        <li>Không yêu cầu CCCD, ngày sinh, ảnh hoặc giới tính.</li>
+        <li>Bạn có thể xóa dữ liệu phiên bất cứ lúc nào.</li>
+        <li>AI không tự nộp hồ sơ, chấm điểm hay xếp hạng bạn.</li>
+      </ul>
+      <label class="check-row"><input id="consent-check" type="checkbox"> Tôi hiểu và đồng ý xử lý CV cho phiên này.</label>
+      <button id="consent-btn" class="primary full" disabled>Vào JobPilot <span>→</span></button>
+    </section>
+  </div>
+
+  <header class="topbar">
+    <a class="logo" href="#"><span class="logo-dot"></span>jobpilot<span class="logo-vn">VN</span></a>
+    <div class="topbar-right"><span class="privacy-pill">● Phiên riêng tư</span><button id="delete-btn" class="ghost">Xóa dữ liệu</button></div>
+  </header>
+
+  <main class="app-shell">
+    <section class="hero">
+      <div><p class="eyebrow accent">ỨNG TUYỂN CÓ BẰNG CHỨNG</p><h2>Biến tin tuyển dụng<br><em>thành bước tiến.</em></h2><p class="hero-copy">Đọc kỹ yêu cầu. Viết thật từ trải nghiệm của bạn.<br>Chuẩn bị tốt hơn cho cuộc phỏng vấn.</p></div>
+      <div class="hero-note"><span class="spark">✦</span><span>Không bịa.<br>Không chấm điểm.<br>Không nộp thay bạn.</span></div>
+    </section>
+
+    <nav class="tabs" aria-label="Các tính năng">
+      <button class="tab active" data-tab="map"><span>01</span><strong>JD → Proof</strong><small>Tìm bằng chứng</small></button>
+      <button class="tab" data-tab="copilot"><span>02</span><strong>Copilot</strong><small>Viết trung thực</small></button>
+      <button class="tab" data-tab="interview"><span>03</span><strong>Replay</strong><small>Luyện phỏng vấn</small></button>
+      <button class="tab" data-tab="trust"><span>04</span><strong>Trust check</strong><small>Kiểm tra tin đăng</small></button>
+    </nav>
+
+    <div id="notice" class="notice hidden"></div>
+
+    <section id="tab-map" class="tab-panel active">
+      <div class="section-intro"><div><p class="eyebrow">01 / JD → PROOF MAP</p><h3>Tin này đang thực sự tìm gì?</h3></div><p>Dán tin công khai hoặc URL, rồi tải CV thật của bạn.<br>JobPilot sẽ chỉ ra câu nào đã có bằng chứng.</p></div>
+      <form id="analyze-form" class="input-grid">
+        <div class="field-card posting-field"><label for="posting-url">URL tin tuyển dụng <span>không bắt buộc</span></label><input id="posting-url" name="postingUrl" type="url" placeholder="https://careers.example.com/..." autocomplete="off"><div class="or"><i></i>hoặc dán nội dung bên dưới<i></i></div><textarea id="posting-text" name="postingText" rows="8" placeholder="Dán toàn bộ nội dung tin tuyển dụng tại đây..."></textarea></div>
+        <div class="field-card cv-field"><label for="cv-file">CV của bạn <span>PDF hoặc DOCX · tối đa 8MB</span></label><label class="dropzone" for="cv-file"><span class="upload-icon">↑</span><strong id="file-name">Chọn file CV</strong><small>Kéo thả hoặc nhấn để tải lên</small><input id="cv-file" name="cv" type="file" accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"></label><div class="data-note">🔒 CV chỉ tồn tại trong phiên này và sẽ được xóa khi bạn nhấn “Xóa dữ liệu”.</div></div>
+        <div class="form-actions"><button class="primary" type="submit" id="analyze-btn">Phân tích bằng chứng <span>→</span></button><span class="microcopy">AI đọc yêu cầu, không quyết định thay bạn</span></div>
+      </form>
+      <div id="map-result" class="result-area hidden"></div>
+    </section>
+
+    <section id="tab-copilot" class="tab-panel">
+      <div class="section-intro"><div><p class="eyebrow">02 / TRUTHFUL COPILOT</p><h3>Viết tốt hơn, không viết quá sự thật.</h3></div><p>Chọn một bullet đã có bằng chứng.<br>Mọi câu đều có nguồn để bạn duyệt.</p></div>
+      <div id="copilot-empty" class="empty-state">Hãy hoàn tất <button class="inline-link" data-go="map">JD → Proof Map</button> trước để chọn một bullet có thật.</div>
+      <div id="copilot-workspace" class="copilot-layout hidden"><aside><label class="eyebrow">CHỌN BULLET CV</label><div id="bullet-list" class="bullet-list"></div></aside><div><div class="copilot-toolbar"><span class="source-chip">Nguồn: CV + tin tuyển dụng hiện tại</span><button id="generate-copilot" class="primary">Tạo bản nháp <span>→</span></button></div><div id="copilot-result" class="copilot-result"></div></div></div>
+    </section>
+
+    <section id="tab-interview" class="tab-panel">
+      <div class="section-intro"><div><p class="eyebrow">03 / LIVE INTERVIEW REPLAY</p><h3>Nghe lại câu trả lời thật của bạn.</h3></div><p>Câu hỏi lấy từ tin và CV hiện tại.<br>Phản hồi tập trung vào nội dung và cấu trúc.</p></div>
+      <div id="interview-empty" class="empty-state">Phân tích tin tuyển dụng và CV để tạo bộ câu hỏi.</div>
+      <div id="interview-workspace" class="interview-layout hidden"><div class="question-card"><div class="question-count">CÂU HỎI <span id="question-index">1</span> / <span id="question-total">3</span></div><h4 id="question-text">...</h4><div class="question-actions"><button id="record-btn" class="record"><span class="record-dot"></span><span id="record-label">Bắt đầu ghi âm</span></button><span class="or-label">hoặc</span><button id="type-answer" class="secondary">Gõ câu trả lời</button></div><p class="record-hint">Mic chỉ dùng trong trình duyệt. Bản chép lời là dữ liệu thật của bạn.</p></div><div class="answer-card"><label for="answer-text">BẢN CHÉP LỜI / CÂU TRẢ LỜI</label><textarea id="answer-text" rows="11" placeholder="Transcript sẽ xuất hiện ở đây. Bạn cũng có thể gõ trực tiếp..."></textarea><div class="answer-actions"><button id="review-answer" class="primary">Xem điểm cần bổ sung <span>→</span></button></div><div id="feedback" class="feedback hidden"></div></div></div>
+    </section>
+
+    <section id="tab-trust" class="tab-panel">
+      <div class="section-intro"><div><p class="eyebrow">04 / JOB-POST TRUST CHECK</p><h3>Tin đăng này cần xác minh điều gì?</h3></div><p>Dành cho bài đăng Facebook hoặc Zalo.<br>Không kết luận ai là kẻ lừa đảo.</p></div>
+      <form id="trust-form"><div class="field-card"><label for="trust-text">Dán nội dung bài đăng <span>bắt buộc nếu không có ảnh</span></label><textarea id="trust-text" rows="9" placeholder="Dán nguyên văn bài đăng Facebook / Zalo..."></textarea><div class="trust-upload"><label for="screenshot">Hoặc tải ảnh chụp màn hình <span>(OCR thủ công trong demo)</span></label><input id="screenshot" type="file" accept="image/*"></div><label class="official-field" for="official-url">Trang tuyển dụng chính thức của nhà tuyển dụng <span>không bắt buộc</span></label><input id="official-url" name="officialUrl" type="url" placeholder="https://congty.vn/careers/..." autocomplete="off"></div><div class="form-actions"><button class="primary" type="submit">Kiểm tra tín hiệu <span>→</span></button><span class="microcopy">Kết quả chỉ là needs verification / exercise caution</span></div></form><div id="trust-result" class="result-area hidden"></div>
+    </section>
+  </main>
+  <footer><span>JobPilot · Hackathon demo</span><span>Không tự động nộp hồ sơ · Không chấm điểm ứng viên</span></footer>
+  <script src="/app.js"></script>
+</body>
+</html>
