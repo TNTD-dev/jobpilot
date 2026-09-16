@@ -27,8 +27,10 @@ Mỗi lần phân tích gửi nội dung tin và CV tới DeepSeek khi có key; 
 Không có match score hay xếp hạng.
 4. (2:25-3:05) Sang **Copilot**, chọn bullet, tạo rewrite và cover-letter opening.
 Chỉ ra nhãn TỪ CV / TỪ TIN / CẦN BẠN XÁC NHẬN, rồi duyệt từng bản trước khi copy.
-5. (3:05-3:50) Sang **Replay**, nhận 2-3 câu hỏi từ cùng nguồn, trả lời thật bằng mic hoặc gõ fallback.
-Chiếu transcript và các mảnh ghép nội dung còn thiếu: bối cảnh, hành động, kết quả.
+5. (3:05-3:50) Sang **Replay**, chọn mức áp lực nhẹ/vừa/căng, rồi nhận từng câu hỏi nối tiếp được dựng từ câu trả lời thật.
+Trả lời 3-4 lượt bằng mic hoặc gõ fallback.
+Có nút dừng ngay lập tức; áp lực chỉ nhắm vào nội dung/lập luận.
+Chiếu transcript, phát lại từng lượt và mảnh ghép còn thiếu: bối cảnh, hành động, kết quả.
 6. (3:50-4:00) Nếu còn thời gian, dán bài Facebook/Zalo vào **Trust check**.
 Các cảnh báo chỉ nói needs verification / exercise caution và trích nguyên văn, không kết luận lừa đảo.
 

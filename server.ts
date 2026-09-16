@@ -151,14 +151,42 @@ app.post("/api/copilot", async (req, res) => {
   } catch (error) { return res.status(502).json({ error: (error as Error).message }); }
 });
 
+const openingQuestions = [
+  "Hãy kể về một dự án trong CV liên quan nhất với vị trí này.",
+  "Trong dự án đó, bạn đã thực hiện hành động cụ thể nào?",
+  "Kết quả nào cho thấy hành động đó có hiệu quả?",
+  "Nếu làm lại, bạn sẽ kiểm tra giả định nào đầu tiên?"
+];
+
+function fallbackInterview(answer: string, turn: number, pressure: string) {
+  const text = answer.trim();
+  const missing: string[] = [];
+  if (!text || text.split(/\s+/).length < 18 || !/(khi|trong|dự án|bối cảnh|vấn đề|lúc)/i.test(text)) missing.push("no-context");
+  if (!/(tôi|mình).{0,80}(đã|thực hiện|xây dựng|dùng|phối hợp|giải quyết|làm)/is.test(text)) missing.push("no-action");
+  if (!/\d|kết quả|hoàn thành|tăng|giảm|cải thiện|giúp/i.test(text)) missing.push("no-result");
+  const firstMissing = missing[0];
+  const pressurePrefix = pressure === "intense" && firstMissing ? "Bạn đang nói khá chung chung. " : "";
+  const followups = [
+    `${pressurePrefix}Bạn vừa nhắc đến điều đó - bối cảnh hoặc vấn đề cụ thể lúc ấy là gì?`,
+    `${pressurePrefix}Bạn đã tự mình làm bước nào, dùng công cụ gì, và vì sao chọn cách đó?`,
+    `${pressurePrefix}Con số hoặc dấu hiệu nào cho thấy kết quả? Nếu không có số, bạn quan sát thay đổi cụ thể nào?`,
+    `${pressurePrefix}Bạn đang giả định điều gì về cách làm đó? Bạn sẽ kiểm tra giả định ấy ra sao?`
+  ];
+  const fix = firstMissing === "no-context" ? "Thêm một câu về bối cảnh hoặc vấn đề trước khi kể hành động." : firstMissing === "no-action" ? "Nói rõ bạn đã tự làm bước nào, thay vì chỉ mô tả nhiệm vụ của nhóm." : firstMissing === "no-result" ? "Thêm kết quả cụ thể hoặc dấu hiệu quan sát được, không cần bịa số." : "Cấu trúc bối cảnh - hành động - kết quả đang rõ.";
+  return { questions: openingQuestions, nextQuestion: turn < 4 ? followups[Math.min(turn, followups.length - 1)] : null, feedback: { missing, structure: missing.length ? "needs-work" : "held", fix, note: missing.length ? "Câu trả lời cần thêm bằng chứng nội dung." : "Câu trả lời giữ được bối cảnh, hành động và kết quả." }, modelAvailable: false };
+}
+
 app.post("/api/interview", async (req, res) => {
-  const { posting, cv, answer } = req.body || {};
+  const { posting, cv, answer, history = [], pressure = "medium", turn = 0 } = req.body || {};
   if (!posting || !cv) return res.status(400).json({ error: "Cần phân tích tin và CV trước." });
   try {
-    const result = await model(`Bạn là huấn luyện viên phỏng vấn. Chỉ đánh giá nội dung và cấu trúc câu trả lời, không đánh giá giọng, cảm xúc, ngoại hình, sự tự tin hay tính cách. Trả JSON: {"questions":["2-3 câu hỏi ngắn dựa trên tin và CV"],"feedback":{"missing":["no-result|no-context|no-action"],"note":"nhận xét ngắn bằng tiếng Việt"}}.`, `TIN:\n${String(posting).slice(0, 18000)}\nCV:\n${String(cv).slice(0, 18000)}\nCÂU TRẢ LỜI (có thể trống):\n${String(answer || "")}`);
+    const result = await model(`Bạn là agent phỏng vấn thử của JobPilot. Đây là MÔ PHỎNG LUYỆN TẬP. Hỏi từng câu một trong 3-4 lượt. Câu hỏi tiếp theo phải dựa trên câu trả lời vừa nghe và đào sâu bối cảnh, hành động, kết quả, con số hoặc lỗ hổng trong CV. Mức áp lực là ${pressure}: light thân thiện, medium truy vấn rõ, intense có thể hỏi dồn khi câu trả lời mơ hồ, thách thức giả định trực tiếp và giữ im lặng có chủ đích sau câu yếu. Áp lực chỉ nhắm vào nội dung/lập luận, tuyệt đối không nhận xét con người, giọng, ngoại hình, cảm xúc, sự tự tin hay tính cách. Không đưa đáp án mẫu, ví dụ câu trả lời, hoặc câu chữ để người dùng lặp lại; chỉ gợi mở bằng câu hỏi và mô tả điểm cần bổ sung. Trả JSON thuần: {"questions":["4 câu hỏi mở đầu"],"nextQuestion":"một câu hỏi tiếp theo hoặc null sau lượt 4","feedback":{"missing":["no-result|no-context|no-action"],"structure":"held|needs-work","fix":"một câu cụ thể cần sửa","note":"nhận xét nội dung bằng tiếng Việt"}}.`, `TIN:\n${String(posting).slice(0, 18000)}\nCV:\n${String(cv).slice(0, 18000)}\nLỊCH SỬ TRONG PHIÊN:\n${JSON.stringify(history).slice(0, 10000)}\nLƯỢT HIỆN TẠI: ${turn}\nCÂU TRẢ LỜI VỪA NGHE:\n${String(answer || "")}`);
     if (result) return res.json({ ...result, modelAvailable: true });
-    return res.json({ questions: ["Hãy kể về một dự án liên quan nhất với vị trí này.", "Bạn đã hành động cụ thể thế nào và kết quả ra sao?", "Bạn sẽ áp dụng kinh nghiệm nào trong CV vào công việc này?"] , feedback: { missing: answer ? ["no-result", "no-context", "no-action"] : [], note: answer ? "Bản đánh giá tự động chưa bật. Hãy tự kiểm tra câu trả lời có bối cảnh, hành động và kết quả cụ thể." : "Hãy trả lời để nhận phản hồi cấu trúc." }, modelAvailable: false });
-  } catch (error) { return res.status(502).json({ error: (error as Error).message }); }
+    return res.json(fallbackInterview(String(answer || ""), Number(turn), String(pressure)));
+  } catch (error) {
+    const fallback = fallbackInterview(String(answer || ""), Number(turn), String(pressure));
+    return res.json({ ...fallback, modelError: (error as Error).message });
+  }
 });
 
 app.post("/api/trust", upload.single("screenshot"), async (req, res) => {
