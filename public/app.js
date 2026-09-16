@@ -13,31 +13,43 @@ async function request(url, options) {
   if (!response.ok) throw new Error(data.error || 'Có lỗi không xác định.');
   return data;
 }
-function goTab(name) { document.querySelectorAll('.tab,.tab-panel').forEach(el => el.classList.remove('active')); $(`.tab[data-tab="${name}"]`).classList.add('active'); $(`#tab-${name}`).classList.add('active'); }
-
+function goTab(name) {
+  if (name !== 'input' && !state.analysis) { notice('Hoàn thành bước 1 với tin và CV thật trước khi đi tiếp.'); name = 'input'; }
+  document.querySelectorAll('.tab,.tab-panel').forEach(el => el.classList.remove('active'));
+  const tab = $(`.tab[data-tab="${name}"]`); const panel = $(`#tab-${name}`);
+  if (!tab || !panel) return;
+  tab.classList.add('active'); panel.classList.add('active');
+  if ($('#map-result')) $('#map-result').classList.toggle('hidden', name !== 'map' || !state.analysis);
+}
 document.querySelectorAll('.tab').forEach(btn => btn.addEventListener('click', () => goTab(btn.dataset.tab)));
-document.querySelectorAll('[data-go]').forEach(btn => btn.addEventListener('click', () => goTab(btn.dataset.go)));
+document.addEventListener('click', (event) => {
+  const go = event.target.closest('[data-go]'); if (go) goTab(go.dataset.go);
+  const nav = event.target.closest('[data-step-nav]'); if (nav) goTab(nav.dataset.stepNav);
+  const entry = event.target.closest('[data-entry]'); if (entry) { entryMode = entry.dataset.entry; document.querySelectorAll('[data-entry]').forEach(x => x.classList.toggle('selected', x.dataset.entry === entryMode)); $('#discover-note').classList.toggle('hidden', entryMode !== 'discover'); }
+});
 $('#consent-check').addEventListener('change', (e) => { $('#consent-btn').disabled = !e.target.checked; });
 $('#consent-btn').addEventListener('click', () => { $('#consent').classList.add('hidden'); });
 $('#delete-btn').addEventListener('click', () => {
-  state.analysis = null; state.copilot = null; state.questions = []; $('#map-result').innerHTML = ''; $('#map-result').classList.add('hidden'); $('#copilot-workspace').classList.add('hidden'); $('#copilot-empty').classList.remove('hidden'); $('#interview-workspace').classList.add('hidden'); $('#interview-empty').classList.remove('hidden'); $('#posting-text').value = ''; $('#posting-url').value = ''; $('#cv-file').value = ''; $('#file-name').textContent = 'Chọn file CV'; $('#trust-result').classList.add('hidden'); notice('Đã xóa dữ liệu phiên trên trình duyệt. Không có dữ liệu nào được lưu lại.', 'success');
+  state.analysis = null; state.copilot = null; state.questions = []; entryMode = 'existing'; document.querySelectorAll('[data-entry]').forEach(x => x.classList.toggle('selected', x.dataset.entry === entryMode)); $('#discover-note').classList.add('hidden'); $('#map-result').innerHTML = '<div class="empty-state">Hoàn thành bước 1 để xem bản đồ bằng chứng.</div>'; $('#map-result').classList.remove('hidden'); $('#copilot-workspace').classList.add('hidden'); $('#copilot-empty').classList.remove('hidden'); $('#interview-workspace').classList.add('hidden'); $('#interview-empty').classList.remove('hidden'); $('#posting-text').value = ''; $('#posting-url').value = ''; $('#cv-file').value = ''; $('#file-name').textContent = 'Chọn file CV'; $('#trust-result').classList.add('hidden'); goTab('input'); notice('Đã xóa dữ liệu phiên trên trình duyệt. Không có dữ liệu nào được lưu lại.', 'success');
 });
 $('#cv-file').addEventListener('change', (e) => { $('#file-name').textContent = e.target.files[0]?.name || 'Chọn file CV'; });
 
+let entryMode = 'existing';
 $('#analyze-form').addEventListener('submit', async (event) => {
   event.preventDefault(); clearNotice();
+  if (entryMode === 'discover') return notice('Tìm tin giúp tôi từ CV là bước tiếp theo - demo này chưa kết nối nguồn tìm kiếm. Không có kết quả giả được tạo ra.');
   const file = $('#cv-file').files[0];
   if (!file) return notice('Hãy tải lên CV PDF hoặc DOCX của bạn.');
   if (!$('#posting-text').value.trim() && !$('#posting-url').value.trim()) return notice('Hãy dán nội dung tin hoặc nhập URL công khai.');
   const body = new FormData(event.target); body.append('consent', 'true');
   const button = $('#analyze-btn'); button.disabled = true; button.innerHTML = 'Đang đọc tin và CV <span>…</span>';
-  try { state.analysis = await request('/api/analyze', { method: 'POST', body }); renderMap(); renderBullets(); await loadQuestions(); notice('Đã phân tích xong. Các trích dẫn màu xám là nguyên văn từ nguồn.', 'success'); }
+  try { state.analysis = await request('/api/analyze', { method: 'POST', body }); renderMap(); renderBullets(); await loadQuestions(); goTab('map'); notice('Đã phân tích xong. Các trích dẫn màu xám là nguyên văn từ nguồn.', 'success'); }
   catch (error) { notice(error.message); } finally { button.disabled = false; button.innerHTML = 'Phân tích bằng chứng <span>→</span>'; }
 });
 
 function renderMap() {
   const a = state.analysis; const rows = (a.requirements || []).map((r) => `<div class="map-row"><div><div class="req-main">${esc(r.requirement)}</div><div class="req-quote">“${esc(r.postingSentence)}”</div></div><div><span class="status ${esc(r.status)}">${esc(labelText[r.status] || r.status)}</span><div class="priority">${r.priority === 'must-have' ? 'Must-have' : 'Nice-to-have'}</div></div><div class="cv-quote"><strong>Dòng CV hỗ trợ</strong>“${esc(r.cvLine || 'Không tìm thấy dòng CV hỗ trợ.')}”</div></div>`).join('');
-  $('#map-result').innerHTML = `<div class="result-head"><h4>${a.requirements?.length || 0} yêu cầu được tách</h4><div class="source-meta"><b>Nguồn tin</b> ${esc(a.sourceUrl)}<br>Đọc lúc ${esc(new Date(a.sourceTime).toLocaleString('vi-VN'))}</div></div><div class="map-table"><div class="map-head"><span>YÊU CẦU + CÂU NGUYÊN VĂN</span><span>TRẠNG THÁI</span><span>BẰNG CHỨNG TỪ CV</span></div>${rows || '<div class="empty-state">Không tách được yêu cầu từ nội dung này.</div>'}</div><p class="model-note">${a.modelAvailable ? '✦ Phân tích bởi mô hình AI. Hãy đọc lại trích dẫn trước khi dùng.' : 'ⓘ Model chưa được bật. Đây là bản tách từ khóa dự phòng, không phải kết luận AI.'}</p>`;
+  $('#map-result').innerHTML = `<div class="result-head"><h4>${a.requirements?.length || 0} yêu cầu được tách</h4><div class="source-meta"><b>Nguồn tin</b> ${esc(a.sourceUrl)}<br>Đọc lúc ${esc(new Date(a.sourceTime).toLocaleString('vi-VN'))}</div></div><div class="map-table"><div class="map-head"><span>YÊU CẦU + CÂU NGUYÊN VĂN</span><span>TRẠNG THÁI</span><span>BẰNG CHỨNG TỪ CV</span></div>${rows || '<div class="empty-state">Không tách được yêu cầu từ nội dung này.</div>'}</div><p class="model-note">${a.modelAvailable ? '✦ Phân tích bởi mô hình AI. Hãy đọc lại trích dẫn trước khi dùng.' : 'ⓘ Model chưa được bật. Đây là bản tách từ khóa dự phòng, không phải kết luận AI.'}</p><div class="path-nav panel-nav"><button class="secondary" data-step-nav="input">← Quay lại</button><span class="microcopy">Mọi trích dẫn được giữ nguyên để bạn kiểm tra.</span><button class="primary" data-step-nav="copilot">Tiếp theo: viết thật <span>→</span></button></div>`;
   $('#map-result').classList.remove('hidden');
 }
 function renderBullets() {

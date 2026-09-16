@@ -33,39 +33,45 @@
 
   <main class="app-shell">
     <section class="hero">
-      <div><p class="eyebrow accent">ỨNG TUYỂN CÓ BẰNG CHỨNG</p><h2>Biến tin tuyển dụng<br><em>thành bước tiến.</em></h2><p class="hero-copy">Đọc kỹ yêu cầu. Viết thật từ trải nghiệm của bạn.<br>Chuẩn bị tốt hơn cho cuộc phỏng vấn.</p></div>
+      <div><p class="eyebrow accent">ỨNG TUYỂN CÓ BẰNG CHỨNG</p><h2>Biến tin tuyển dụng<br><em>thành bước tiến.</em></h2><p class="hero-copy">Mỗi lần chỉ một bước. Đọc kỹ yêu cầu.<br>Viết thật từ trải nghiệm của bạn.</p></div>
       <div class="hero-note"><span class="spark">✦</span><span>Không bịa.<br>Không chấm điểm.<br>Không nộp thay bạn.</span></div>
     </section>
 
-    <nav class="tabs" aria-label="Các tính năng">
-      <button class="tab active" data-tab="map"><span>01</span><strong>JD → Proof</strong><small>Tìm bằng chứng</small></button>
-      <button class="tab" data-tab="copilot"><span>02</span><strong>Copilot</strong><small>Viết trung thực</small></button>
-      <button class="tab" data-tab="interview"><span>03</span><strong>Replay</strong><small>Luyện phỏng vấn</small></button>
-      <button class="tab" data-tab="trust"><span>04</span><strong>Trust check</strong><small>Kiểm tra tin đăng</small></button>
+    <nav class="tabs path-progress" aria-label="Lộ trình ứng tuyển">
+      <button class="tab active" data-tab="input"><span>01</span><strong>Nạp hồ sơ</strong><small>Tin + CV</small></button>
+      <button class="tab" data-tab="map"><span>02</span><strong>Đối chiếu</strong><small>Tìm bằng chứng</small></button>
+      <button class="tab" data-tab="copilot"><span>03</span><strong>Viết thật</strong><small>Copilot</small></button>
+      <button class="tab" data-tab="interview"><span>04</span><strong>Phỏng vấn</strong><small>Replay</small></button>
+      <button class="tab" data-tab="trust"><span>05</span><strong>Kiểm tra tin</strong><small>Trust check</small></button>
     </nav>
 
     <div id="notice" class="notice hidden"></div>
 
-    <section id="tab-map" class="tab-panel active">
-      <div class="section-intro"><div><p class="eyebrow">01 / JD → PROOF MAP</p><h3>Tin này đang thực sự tìm gì?</h3></div><p>Dán tin công khai hoặc URL, rồi tải CV thật của bạn.<br>JobPilot sẽ chỉ ra câu nào đã có bằng chứng.</p></div>
+    <section id="tab-input" class="tab-panel active">
+      <div class="section-intro"><div><p class="eyebrow">01 / NẠP HỒ SƠ</p><h3>Bắt đầu bằng tin bạn đang ngắm.</h3></div><p>Một bước nhỏ trước tiên: đưa tin công khai<br>và CV thật của bạn vào phiên này.</p></div>
+      <div class="entry-choice"><strong>Bạn bắt đầu từ đâu?</strong><div class="entry-options"><button type="button" class="entry-option selected" data-entry="existing">Tôi đã có tin tuyển dụng</button><button type="button" class="entry-option" data-entry="discover">Tìm tin giúp tôi từ CV</button></div><div id="discover-note" class="discover-note hidden">Tính năng tìm tin từ CV là bước tiếp theo của JobPilot. Bản demo này không giả kết quả tìm kiếm - hãy chọn tin công khai và dán URL hoặc nội dung thật để tiếp tục.</div></div>
       <form id="analyze-form" class="input-grid">
         <div class="field-card posting-field"><label for="posting-url">URL tin tuyển dụng <span>không bắt buộc</span></label><input id="posting-url" name="postingUrl" type="url" placeholder="https://careers.example.com/..." autocomplete="off"><div class="or"><i></i>hoặc dán nội dung bên dưới<i></i></div><textarea id="posting-text" name="postingText" rows="8" placeholder="Dán toàn bộ nội dung tin tuyển dụng tại đây..."></textarea></div>
         <div class="field-card cv-field"><label for="cv-file">CV của bạn <span>PDF hoặc DOCX · tối đa 8MB</span></label><label class="dropzone" for="cv-file"><span class="upload-icon">↑</span><strong id="file-name">Chọn file CV</strong><small>Kéo thả hoặc nhấn để tải lên</small><input id="cv-file" name="cv" type="file" accept=".pdf,.docx,application/pdf,application/vnd.openxmlformats-officedocument.wordprocessingml.document"></label><div class="data-note">🔒 CV chỉ tồn tại trong phiên này và sẽ được xóa khi bạn nhấn “Xóa dữ liệu”.</div></div>
         <div class="form-actions"><button class="primary" type="submit" id="analyze-btn">Phân tích bằng chứng <span>→</span></button><span class="microcopy">AI đọc yêu cầu, không quyết định thay bạn</span></div>
       </form>
-      <div id="map-result" class="result-area hidden"></div>
+    </section>
+
+    <section id="tab-map" class="tab-panel">
+      <div class="section-intro"><div><p class="eyebrow">02 / JD → PROOF MAP</p><h3>Tin này đang thực sự tìm gì?</h3></div><p>Đọc từng yêu cầu cạnh dòng CV<br>đã hoặc chưa thể chứng minh.</p></div>
+      <div id="map-result" class="result-area"><div class="empty-state">Hoàn thành bước 1 để xem bản đồ bằng chứng.</div></div>
     </section>
 
     <section id="tab-copilot" class="tab-panel">
       <div class="section-intro"><div><p class="eyebrow">02 / TRUTHFUL COPILOT</p><h3>Viết tốt hơn, không viết quá sự thật.</h3></div><p>Chọn một bullet đã có bằng chứng.<br>Mọi câu đều có nguồn để bạn duyệt.</p></div>
       <div id="copilot-empty" class="empty-state">Hãy hoàn tất <button class="inline-link" data-go="map">JD → Proof Map</button> trước để chọn một bullet có thật.</div>
-      <div id="copilot-workspace" class="copilot-layout hidden"><aside><label class="eyebrow">CHỌN BULLET CV</label><div id="bullet-list" class="bullet-list"></div></aside><div><div class="copilot-toolbar"><span class="source-chip">Nguồn: CV + tin tuyển dụng hiện tại</span><button id="generate-copilot" class="primary">Tạo bản nháp <span>→</span></button></div><div id="copilot-result" class="copilot-result"></div></div></div>
+      <div id="copilot-workspace" class="copilot-layout hidden"><aside><label class="eyebrow">CHỌN BULLET CV</label><div id="bullet-list" class="bullet-list"></div></aside><div><div class="copilot-toolbar"><span class="source-chip">Nguồn: CV + tin tuyển dụng hiện tại</span><button id="generate-copilot" class="primary">Tạo bản nháp <span>→</span></button></div><div id="copilot-result" class="copilot-result"></div></div></div><div class="path-nav panel-nav"><button class="secondary" data-step-nav="map">← Quay lại</button><span class="microcopy">Bạn luôn có thể quay lại kiểm tra nguồn.</span><button class="primary" data-step-nav="interview">Tiếp theo: phỏng vấn <span>→</span></button></div>
     </section>
 
     <section id="tab-interview" class="tab-panel">
       <div class="section-intro"><div><p class="eyebrow">03 / LIVE INTERVIEW REPLAY</p><h3>Nghe lại câu trả lời thật của bạn.</h3></div><p>Câu hỏi lấy từ tin và CV hiện tại.<br>Phản hồi tập trung vào nội dung và cấu trúc.</p></div>
       <div id="interview-empty" class="empty-state">Phân tích tin tuyển dụng và CV để tạo bộ câu hỏi.</div>
-      <div id="interview-workspace" class="hidden"><div class="practice-bar"><span class="practice-badge">● ĐANG LUYỆN TẬP</span><label>Áp lực <select id="pressure"><option value="light">Nhẹ</option><option value="medium" selected>Vừa</option><option value="intense">Căng</option></select></label><button id="stop-interview" class="stop-btn">Dừng buổi tập</button></div><div class="interview-layout"><div class="question-card"><div class="question-count">LƯỢT <span id="question-index">1</span> / 4</div><h4 id="question-text">...</h4><div class="question-actions"><button id="record-btn" class="record"><span class="record-dot"></span><span id="record-label">Bắt đầu ghi âm</span></button><span class="or-label">hoặc</span><button id="type-answer" class="secondary">Gõ câu trả lời</button></div><p class="record-hint">Mic chỉ dùng trong trình duyệt. Bản chép lời là dữ liệu thật của bạn.</p></div><div class="answer-card"><label for="answer-text">BẢN CHÉP LỜI / CÂU TRẢ LỜI</label><textarea id="answer-text" rows="11" placeholder="Transcript sẽ xuất hiện ở đây. Bạn cũng có thể gõ trực tiếp..."></textarea><div class="answer-actions"><button id="review-answer" class="primary">Gửi câu trả lời <span>→</span></button></div><div id="feedback" class="feedback hidden"></div></div></div><div id="replay" class="replay hidden"></div></div>
+      <div id="interview-workspace" class="hidden"><div class="practice-bar"><span class="practice-badge">● ĐANG LUYỆN TẬP</span><label>Áp lực <select id="pressure"><option value="light">Nhẹ</option><option value="medium" selected>Vừa</option><option value="intense">Căng</option></select></label><button id="stop-interview" class="stop-btn">Dừng buổi tập</button></div><div class="interview-layout"><div class="question-card"><div class="question-count">LƯỢT <span id="question-index">1</span> / 4</div><h4 id="question-text">...</h4><div class="question-actions"><button id="record-btn" class="record"><span class="record-dot"></span><span id="record-label">Bắt đầu ghi âm</span></button><span class="or-label">hoặc</span><button id="type-answer" class="secondary">Gõ câu trả lời</button></div><p class="record-hint">Mic chỉ dùng trong trình duyệt. Bản chép lời là dữ liệu thật của bạn.</p></div><div class="answer-card"><label for="answer-text">BẢN CHÉP LỜI / CÂU TRẢ LỜI</label><textarea id="answer-text" rows="11" placeholder="Transcript sẽ xuất hiện ở đây. Bạn cũng có thể gõ trực tiếp..."></textarea><div class="answer-actions"><button id="review-answer" class="primary">Gửi câu trả lời <span>→</span></button></div><div id="feedback" class="feedback hidden"></div></div></div><div id="replay" class="replay hidden"></div><div class="path-nav panel-nav"><button class="secondary" data-step-nav="copilot">← Quay lại</button><span class="microcopy">Chỉ đánh giá nội dung và cấu trúc.</span><button class="primary" data-step-nav="trust">Tiếp theo: kiểm tra tin <span>→</span></button></div></div>
     </section>
 
     <section id="tab-trust" class="tab-panel">
